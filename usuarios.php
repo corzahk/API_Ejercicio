@@ -25,10 +25,33 @@ $_usuarios = new usuarios;
         //recibimos los datos enviados
         $postBody = file_get_contents("php://input");
         //enviamos los datos al navegador
-        $resp = $_usuarios->post($postBody);
-        print_r($resp);
+        $datosArray = $_usuarios->post($postBody);
+        //devolvemos una respuesta
+        header('Content-Type: application/json');
+        if(isset($datosArray["result"]["error_id"])){
+            $responseCode = $datosArray["result"]["error_id"];
+            http_response_code($responseCode);
+        }else{
+            http_response_code(200);
+        }
+        echo json_encode($datosArray);
     }else if ($_SERVER['REQUEST_METHOD']== "PUT") {
-        echo "hola put";
+       //recibimos los datos enviados
+       $postBody = file_get_contents("php://input");
+       //enviamos datos al manejador
+       $datosArray = $_usuarios->put($postBody);
+       //devolvemos una respuesta
+       header('Content-Type: application/json');
+       if(isset($datosArray["result"]["error_id"])){
+           $responseCode = $datosArray["result"]["error_id"];
+           http_response_code($responseCode);
+       }else{
+           http_response_code(200);
+       }
+       echo json_encode($datosArray);
+
+
+
     }else if ($_SERVER['REQUEST_METHOD'] == "DELETE"){
         echo "hola delete";
     }else{
