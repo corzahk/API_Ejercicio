@@ -112,6 +112,36 @@ require_once "respuestas.class.php";
                 }
             }
 
+            public function delete ($json){
+                $_respuestas = new respuestas;
+                $datos =json_decode($json,true);
+
+                if(!isset($datos['usuarioId'])){
+                    return $_respuestas-> error_400();
+                }else{
+                    $this->usuarioid = $datos['usuarioId'];
+                  
+                    $resp = $this->eliminarUsuario();
+                    if($resp){
+                        $respuesta = $_respuestas->response;
+                        $respuesta["result"] = array("usuarioId" => $this->usuarioid);
+                        return $respuesta;
+                    }else{
+                        return $_respuestas->error_500();
+                    }
+
+                }
+            }
+            private function eliminarUsuario(){
+                $query = "DELETE FROM " . $this->table . " WHERE UsuarioId= '" . $this->usuarioid . "'";
+                $resp = parent::nonQuery($query);
+                if($resp >= 1 ){
+                    return $resp;
+                }else{
+                    return 0;
+                }
+            }
+
     }
 
 ?>
