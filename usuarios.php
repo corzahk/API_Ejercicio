@@ -10,15 +10,23 @@ $_usuarios = new usuarios;
         if(isset($_GET["page"])){
             $pagina = $_GET["page"];
            $listaUsuarios = $_usuarios->listaUsuarios($pagina);
+           header("Content-Type: application/json");
             echo json_encode($listaUsuarios);
+            http_response_code(200);
         }else if (isset($_GET['id'])){
             $usuarioid = $_GET['id'];
             $datosUsario = $_usuarios->obtenerUsario($usuarioid);
+            header("Content-Type: application/json");
             echo json_encode($datosUsario);
+            http_response_code(200);
         }
        
     }else if($_SERVER['REQUEST_METHOD'] == "POST"){
-        echo "hola post";
+        //recibimos los datos enviados
+        $postBody = file_get_contents("php://input");
+        //enviamos los datos al navegador
+        $resp = $_usuarios->post($postBody);
+        print_r($resp);
     }else if ($_SERVER['REQUEST_METHOD']== "PUT") {
         echo "hola put";
     }else if ($_SERVER['REQUEST_METHOD'] == "DELETE"){
