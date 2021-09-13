@@ -13,6 +13,7 @@ require_once "respuestas.class.php";
             private $telefono = "";
             private $fechaNacimiento ="0000-00-00";
             private $correo = "";
+            private $token = "";
 
 
             public function listaUsuarios($pagina = 1){
@@ -36,7 +37,15 @@ require_once "respuestas.class.php";
                 $_respuestas = new respuestas;
                 $datos =json_decode($json,true);
 
-                if(!isset($datos['nombre']) || !isset($datos['dni']) || !isset($datos['correo'])){
+                if(!isset($datos['$token'])){
+                        //
+                        return $_respuestas->error_401();
+                }else{
+                    $this->token = $datos["token"];
+                    $arrayToken = $this-> buscarToken();
+                    if($arrayToken){
+
+                        if(!isset($datos['nombre']) || !isset($datos['dni']) || !isset($datos['correo'])){
                     return $_respuestas-> error_400();
                 }else{
                     $this->nombre = $datos['nombre'];
@@ -57,6 +66,13 @@ require_once "respuestas.class.php";
                     }
 
                 }
+
+                    }else{
+                        return $_respuestas->error_401("El token que envio es invalido");
+                    }
+                }
+
+                
             }
             private function insertarUsuario(){
                 $query = "INSERT INTO " . $this->table . " (DNI,Nombre,Direccion,CodigoPostal,Telefono,Genero,FechaNacimiento,Correo)
@@ -75,29 +91,42 @@ require_once "respuestas.class.php";
                 $_respuestas = new respuestas;
                 $datos =json_decode($json,true);
 
-                if(!isset($datos['usuarioId'])){
-                    return $_respuestas-> error_400();
-                }else{
-                    $this->usuarioid = $datos['usuarioId'];
-                    if(isset($datos['nombre'])) { $this->nombre = $datos['nombre']; }
-                    if(isset($datos['dni'])) { $this->dni = $datos['dni']; }
-                    if(isset($datos['correo'])) { $this->correo = $datos['correo']; }
-                    
-                    if(isset($datos['telefono'])) { $this->telefono = $datos['telefono']; }
-                    if(isset($datos['direccion'])) { $this->direccion = $datos['direccion']; }
-                    if(isset($datos['codigoPostal'])) { $this->codigoPostal = $datos['codigoPostal']; }
-                    if(isset($datos['genero'])) { $this->genero = $datos['genero']; }
-                    if(isset($datos['fechaNacimiento'])) { $this->fechaNacimiento = $datos['fechaNacimiento']; }
-                    $resp = $this->modificarUsuario();
-                    if($resp){
-                        $respuesta = $_respuestas->response;
-                        $respuesta["result"] = array("usuarioId" => $this->usuarioid);
-                        return $respuesta;
+                if(!isset($datos['$token'])){
+                    //
+                    return $_respuestas->error_401();
+            }else{
+                $this->token = $datos["token"];
+                $arrayToken = $this-> buscarToken();
+                if($arrayToken){
+                    if(!isset($datos['usuarioId'])){
+                        return $_respuestas-> error_400();
                     }else{
-                        return $_respuestas->error_500();
+                        $this->usuarioid = $datos['usuarioId'];
+                        if(isset($datos['nombre'])) { $this->nombre = $datos['nombre']; }
+                        if(isset($datos['dni'])) { $this->dni = $datos['dni']; }
+                        if(isset($datos['correo'])) { $this->correo = $datos['correo']; }
+                        
+                        if(isset($datos['telefono'])) { $this->telefono = $datos['telefono']; }
+                        if(isset($datos['direccion'])) { $this->direccion = $datos['direccion']; }
+                        if(isset($datos['codigoPostal'])) { $this->codigoPostal = $datos['codigoPostal']; }
+                        if(isset($datos['genero'])) { $this->genero = $datos['genero']; }
+                        if(isset($datos['fechaNacimiento'])) { $this->fechaNacimiento = $datos['fechaNacimiento']; }
+                        $resp = $this->modificarUsuario();
+                        if($resp){
+                            $respuesta = $_respuestas->response;
+                            $respuesta["result"] = array("usuarioId" => $this->usuarioid);
+                            return $respuesta;
+                        }else{
+                            return $_respuestas->error_500();
+                        }
+    
                     }
-
+                }else{
+                    return $_respuestas->error_401("El token que envio es invalido");
                 }
+            }
+
+                
             }
 
             private function modificarUsuario(){
@@ -116,21 +145,34 @@ require_once "respuestas.class.php";
                 $_respuestas = new respuestas;
                 $datos =json_decode($json,true);
 
-                if(!isset($datos['usuarioId'])){
-                    return $_respuestas-> error_400();
-                }else{
-                    $this->usuarioid = $datos['usuarioId'];
-                  
-                    $resp = $this->eliminarUsuario();
-                    if($resp){
-                        $respuesta = $_respuestas->response;
-                        $respuesta["result"] = array("usuarioId" => $this->usuarioid);
-                        return $respuesta;
-                    }else{
-                        return $_respuestas->error_500();
-                    }
 
+                if(!isset($datos['$token'])){
+                    //
+                    return $_respuestas->error_401();
+            }else{
+                $this->token = $datos["token"];
+                $arrayToken = $this-> buscarToken();
+                if($arrayToken){
+                    if(!isset($datos['usuarioId'])){
+                        return $_respuestas-> error_400();
+                    }else{
+                        $this->usuarioid = $datos['usuarioId'];
+                      
+                        $resp = $this->eliminarUsuario();
+                        if($resp){
+                            $respuesta = $_respuestas->response;
+                            $respuesta["result"] = array("usuarioId" => $this->usuarioid);
+                            return $respuesta;
+                        }else{
+                            return $_respuestas->error_500();
+                        }
+    
+                    }
+                }else{
+                    return $_respuestas->error_401("El token que envio es invalido");
                 }
+            }
+               
             }
             private function eliminarUsuario(){
                 $query = "DELETE FROM " . $this->table . " WHERE UsuarioId= '" . $this->usuarioid . "'";
@@ -141,7 +183,27 @@ require_once "respuestas.class.php";
                     return 0;
                 }
             }
+            private function buscarToken(){
+                $query = "SELECT  TokenId,AdministradorId,Estado from administradores_token WHERE Token = '" . $this->token . "' AND Estado = 'Activo'";
+                $resp = parent::obtenerDatos($query);
+                if($resp){
+                    return $resp;
+                }else{
+                    return 0;
+                }
+            }
 
+            private function actualizarToken($tokenid){
+                $date = date("Y-m-d H:i");
+                $query = "UPDATE administradores_token SET Fecha = '$date' WHERE TokenId = '$tokenid' ";
+                $resp = parent::nonQuery($query);
+                if($resp >= 1){
+                    return $resp;
+                }else{
+                    return 0;
+                }
+            }
+        
     }
 
 ?>

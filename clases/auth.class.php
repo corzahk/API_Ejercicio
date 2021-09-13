@@ -66,7 +66,7 @@
             $token =bin2hex(openssl_random_pseudo_bytes(16, $val));
             $date = date("Y-m-d H:i");
             $estado = "Activo";
-            $query = "INSERT INTO administradores_token (AdmnistradorId, Token, Estado, Fecha)VALUES('$administradorid', '$token', '$estado', '$date')";
+            $query = "INSERT INTO administradores_token (AdministradorId, Token, Estado, Fecha)VALUES('$administradorid', '$token', '$estado', '$date')";
             $verifica = parent::nonQuery($query);
                 if($verifica){
                     return $token;
